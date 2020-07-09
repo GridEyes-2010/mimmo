@@ -932,7 +932,7 @@ MimmoObject::getPointGlobalCountOffset(){
                for aligning external vertex data to bitpit::Patch ordering.
  */
 dvecarr3E
-MimmoObject::getVerticesCoords(liimap* mapDataInv){
+MimmoObject::getVerticesCoords(lilimap* mapDataInv){
 	dvecarr3E result(getNVertices());
 	int  i = 0;
 
@@ -1000,7 +1000,7 @@ MimmoObject::getVertices() const {
  * \param[in] mapDataInv inverse of Map of vertex ids actually set, for aligning external vertex data to bitpit::Patch ordering
  */
 livector2D
-MimmoObject::getCompactConnectivity(liimap & mapDataInv){
+MimmoObject::getCompactConnectivity(lilimap & mapDataInv){
 
 	livector2D connecti(getNCells());
 	int np, counter =0;
@@ -1219,10 +1219,10 @@ MimmoObject::getPatch() const{
  * \param[in] withghosts If true the structure is filled with ghosts (meaningful only in parallel versions)
  * \return local/unique-id map
  */
-liimap
+lilimap
 MimmoObject::getMapData(bool withghosts){
-	liimap mapData;
-	liimap mapDataInv = getMapDataInv(withghosts);
+	lilimap mapData;
+	lilimap mapDataInv = getMapDataInv(withghosts);
 	for (auto const & vertex : getVertices()){
 		long id = vertex.getId();
 		if (mapDataInv.count(id))
@@ -1237,9 +1237,9 @@ MimmoObject::getMapData(bool withghosts){
  * \param[in] withghosts If true the structure is filled with ghosts (meaningful only in parallel versions)
  * \return unique-id/local map
  */
-liimap
+lilimap
 MimmoObject::getMapDataInv(bool withghosts){
-	liimap mapDataInv;
+	lilimap mapDataInv;
 #if MIMMO_ENABLE_MPI
 	if (getPatch()->isPartitioned()){
 		for (auto val : m_pointConsecutiveId){
@@ -1268,9 +1268,9 @@ MimmoObject::getMapDataInv(bool withghosts){
  * \param[in] withghosts If true the structure is filled with ghosts (meaningful only in parallel versions)
  * \return global consecutive / local unique id map
  */
-liimap
+lilimap
 MimmoObject::getMapCell(bool withghosts){
-	liimap mapCell;
+	lilimap mapCell;
 	if (!isInfoSync()) buildPatchInfo();
 	for (auto const & cell : getCells()){
 		long id = cell.getId();
@@ -1290,10 +1290,10 @@ MimmoObject::getMapCell(bool withghosts){
  * \param[in] withghosts If true the structure is filled with ghosts (meaningful only in parallel versions)
  * \return local unique id / global consecutive map
  */
-liimap
+lilimap
 MimmoObject::getMapCellInv(bool withghosts){
 	if (!isInfoSync()) buildPatchInfo();
-	liimap mapCellInv = getPatchInfo()->getCellConsecutiveMap();
+	lilimap mapCellInv = getPatchInfo()->getCellConsecutiveMap();
 	if (!withghosts){
 		std::vector<long> todelete;
 		for (auto & val : mapCellInv){
