@@ -843,10 +843,10 @@ RefineGeometry::smoothing(std::set<long> * constrainedVertices)
 			for (long id : geometry->getVertices().getIds()){
 				geometry->modifyVertex(newcoordinates[id], id);
 			}
-
-//						//TODO DEBUG WRITE
-//						std::string name = "geometry.a."+std::to_string(istep);
-//						geometry->getPatch()->write(name);
+#if MIMMO_ENABLE_MPI
+			geometry->cleanAllParallelSync();
+			geometry->updatePointGhostExchangeInfo();
+#endif
 		}
 
 		{
@@ -884,10 +884,10 @@ RefineGeometry::smoothing(std::set<long> * constrainedVertices)
 			for (long id : geometry->getVertices().getIds()){
 				geometry->modifyVertex(newcoordinates[id], id);
 			}
-
-			//			//TODO DEBUG WRITE
-			//			std::string name = "geometry.b."+std::to_string(istep);
-			//			geometry->getPatch()->write(name);
+#if MIMMO_ENABLE_MPI
+			geometry->cleanAllParallelSync();
+			geometry->updatePointGhostExchangeInfo();
+#endif
 		}
 	}
 
