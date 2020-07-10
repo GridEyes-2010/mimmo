@@ -24,6 +24,9 @@
 
 #include "mimmo_geohandlers.hpp"
 #include "mimmo_manipulators.hpp"
+#if MIMMO_ENABLE_MPI
+#include "mimmo_parallel.hpp"
+#endif
 
 // =================================================================================== //
 /*!
@@ -86,6 +89,19 @@ void test00003() {
     mimmo5->setWriteFileType(FileType::STL);
     mimmo5->setWriteFilename("geohandlers_output_00003.0003");
 
+#if MIMMO_ENABLE_MPI
+    /* Instantiation of a Partition object with default patition method space filling curve.
+     * Plot Optional results during execution active for Partition block.
+     */
+    mimmo::Partition* partition0 = new mimmo::Partition();
+    partition0->setPlotInExecution(true);
+
+    /* Instantiation of a Partition object with default patition method space filling curve.
+     * Plot Optional results during execution active for Partition block.
+     */
+    mimmo::Partition* partition1 = new mimmo::Partition();
+    partition1->setPlotInExecution(true);
+#endif
 
     /* Instantiation of two Selection By Map block.
      * The planes are used as selection objects with an offset
@@ -164,10 +180,19 @@ void test00003() {
 
     /* Setup pin connections.
      */
+#if MIMMO_ENABLE_MPI
+    mimmo::pin::addPin(mimmo0, partition0, M_GEOM, M_GEOM);
+    mimmo::pin::addPin(partition0, mapSel1, M_GEOM, M_GEOM);
+    mimmo::pin::addPin(partition0, mapSel2, M_GEOM, M_GEOM);
+    mimmo::pin::addPin(partition0, applier, M_GEOM, M_GEOM);
+    mimmo::pin::addPin(mimmo1, partition1, M_GEOM, M_GEOM);
+    mimmo::pin::addPin(partition1, mapSel1, M_GEOM, M_GEOM2);
+#else
     mimmo::pin::addPin(mimmo0, mapSel1, M_GEOM, M_GEOM);
     mimmo::pin::addPin(mimmo0, mapSel2, M_GEOM, M_GEOM);
     mimmo::pin::addPin(mimmo0, applier, M_GEOM, M_GEOM);
     mimmo::pin::addPin(mimmo1, mapSel1, M_GEOM, M_GEOM2);
+#endif
     mimmo::pin::addPin(mimmo2, mapSel2, M_GEOM, M_GEOM2);
     mimmo::pin::addPin(mapSel1, mrbf1, M_GEOM, M_GEOM);
     mimmo::pin::addPin(mapSel2, mrbf2, M_GEOM, M_GEOM);
@@ -195,6 +220,10 @@ void test00003() {
     ch0.addObject(mimmo0);
     ch0.addObject(mimmo1);
     ch0.addObject(mimmo2);
+#if MIMMO_ENABLE_MPI
+    ch0.addObject(partition0);
+    ch0.addObject(partition1);
+#endif
     ch0.addObject(mapSel1);
     ch0.addObject(mapSel2);
     ch0.addObject(mrbf1);
@@ -218,6 +247,10 @@ void test00003() {
      */
     delete mimmo0;
     delete mimmo1;
+#if MIMMO_ENABLE_MPI
+    delete partition0;
+    delete partition1;
+#endif
     delete mimmo2;
     delete mimmo3;
     delete mimmo4;
@@ -235,6 +268,10 @@ void test00003() {
 
     mimmo0 = NULL;
     mimmo1 = NULL;
+#if MIMMO_ENABLE_MPI
+    partition0 = NULL;
+    partition1 = NULL;
+#endif
     mimmo2 = NULL;
     mimmo3 = NULL;
     mimmo4 = NULL;
