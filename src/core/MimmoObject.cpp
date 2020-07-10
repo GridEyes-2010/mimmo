@@ -2092,7 +2092,6 @@ void MimmoObject::resetPointGhostExchangeInfo()
 	m_pointGhostExchangeInfoSync = false;
 }
 
-
 /*!
     General checker for SkdTree status throughout all procs. If at least one partition
     has not-syncronized SkdTree set all the other procs to not syncronized and free the structure eventually.
@@ -2214,6 +2213,24 @@ bool MimmoObject::cleanParallelPointGhostExchangeInfoSync(){
 	}
 	//return true clean if the boolean was false, and viceversa.
 	return (!m_pointGhostExchangeInfoSync);
+}
+
+/*!
+    General checker for all InfoSync status throughout all procs. If at least one partition
+    has one not-syncronized InfoSync set all the other procs to not syncronized for this InfoSync
+    and free the structure eventually.
+    \return true if at least the structure was reset, false if nothing was done.
+ */
+bool MimmoObject::cleanAllParallelSync(){
+    bool reset = false;
+    reset |= cleanParallelSkdTreeSync();
+    reset |= cleanParallelKdTreeSync();
+    reset |= cleanParallelAdjacenciesSync();
+    reset |= cleanParallelInterfacesSync();
+    reset |= cleanParallelPointConnectivitySync();
+    reset |= cleanParallelInfoSync();
+    reset |= cleanParallelPointGhostExchangeInfoSync();
+    return reset;
 }
 
 /*!
