@@ -90,7 +90,7 @@ void test00003() {
     mimmo5->setWriteFilename("geohandlers_output_00003.0003");
 
 #if MIMMO_ENABLE_MPI
-    /* Instantiation of a Partition object with default patition method space filling curve.
+    /* Instantiation of a Partition object with default partition method space filling curve.
      * Plot Optional results during execution active for Partition block.
      */
     mimmo::Partition* partition0 = new mimmo::Partition();
