@@ -186,10 +186,6 @@ void test00003() {
     /* Setup pin connections.
      */
 #if MIMMO_ENABLE_MPI
-    //    mimmo::pin::addPin(mimmo0, mapSel1, M_GEOM, M_GEOM);
-    //    mimmo::pin::addPin(mimmo0, mapSel2, M_GEOM, M_GEOM);
-    //    mimmo::pin::addPin(mimmo0, applier, M_GEOM, M_GEOM);
-    //    mimmo::pin::addPin(mimmo1, mapSel1, M_GEOM, M_GEOM2);
     mimmo::pin::addPin(mimmo0, partition0, M_GEOM, M_GEOM);
     mimmo::pin::addPin(partition0, mapSel1, M_GEOM, M_GEOM);
     mimmo::pin::addPin(partition0, mapSel2, M_GEOM, M_GEOM);
