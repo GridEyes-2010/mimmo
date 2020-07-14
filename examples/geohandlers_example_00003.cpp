@@ -133,18 +133,21 @@ void test00003() {
     mrbf1->setPlotInExecution(true);
     mrbf1->setNode(rbfNodes1);
     mrbf1->setDisplacements(displ1);
+    mrbf1->setApply(false);
 
     mimmo::MRBF* mrbf2 = new mimmo::MRBF(mimmo::MRBFSol::NONE);
     mrbf2->setSupportRadiusLocal(0.4);
     mrbf2->setPlotInExecution(true);
     mrbf2->setNode(rbfNodes2);
     mrbf2->setDisplacements(displ2);
+    mrbf2->setApply(false);
 
     /* Create reconstruct vector block and set to recontruct over the whole
      * input geometry the displacements fields
      * given by the two rbf blocks on two separate patches.
      */
     mimmo::ReconstructVector* recon = new mimmo::ReconstructVector();
+    recon->setPlotInExecution(true);
 
     /* Create applier block.
      * It applies the deformation displacements to the original input geometry.
@@ -157,6 +160,7 @@ void test00003() {
      */
     mimmo::ExtractVectorField* extr = new mimmo::ExtractVectorField();
     extr->setMode(mimmo::ExtractMode::ID);
+    extr->setPlotInExecution(true);
 
     /* Create applier extraction block.
      * It applies the extracted deformation displacements
@@ -171,6 +175,7 @@ void test00003() {
     mimmo::ExtractVectorField* extr2 = new mimmo::ExtractVectorField();
     extr2->setMode(mimmo::ExtractMode::MAPPING);
     extr2->setTolerance(1.0e-01);
+    extr2->setPlotInExecution(true);
 
     /* Create applier extraction2 block.
      * It applies the extracted deformation displacements
@@ -181,6 +186,10 @@ void test00003() {
     /* Setup pin connections.
      */
 #if MIMMO_ENABLE_MPI
+    //    mimmo::pin::addPin(mimmo0, mapSel1, M_GEOM, M_GEOM);
+    //    mimmo::pin::addPin(mimmo0, mapSel2, M_GEOM, M_GEOM);
+    //    mimmo::pin::addPin(mimmo0, applier, M_GEOM, M_GEOM);
+    //    mimmo::pin::addPin(mimmo1, mapSel1, M_GEOM, M_GEOM2);
     mimmo::pin::addPin(mimmo0, partition0, M_GEOM, M_GEOM);
     mimmo::pin::addPin(partition0, mapSel1, M_GEOM, M_GEOM);
     mimmo::pin::addPin(partition0, mapSel2, M_GEOM, M_GEOM);
