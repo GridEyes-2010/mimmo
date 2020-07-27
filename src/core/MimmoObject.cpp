@@ -2103,6 +2103,7 @@ bool MimmoObject::cleanParallelKdTreeSync(){
 	//return true clean if the boolean was false, and viceversa.
 	return (!m_kdTreeSync);
 }
+
 /*!
     General checker for Adjacencies status throughout all procs. If at least one partition
     has not-syncronized Adj set all the other procs to not syncronized and free the structure eventually.
@@ -2156,6 +2157,7 @@ bool MimmoObject::cleanParallelPointConnectivitySync(){
 	//return true clean if the boolean was false, and viceversa.
 	return (!m_pointConnectivitySync);
 }
+
 /*!
     General checker for Interfaces status throughout all procs. If at least one partition
     has not-syncronized Interfaces set all the other procs to not syncronized and free the structure eventually.
@@ -2173,6 +2175,7 @@ bool MimmoObject::cleanParallelInfoSync(){
 	//return true clean if the boolean was false, and viceversa.
 	return (!m_infoSync);
 }
+
 /*!
     General checker for Interfaces status throughout all procs. If at least one partition
     has not-syncronized Interfaces set all the other procs to not syncronized and free the structure eventually.
