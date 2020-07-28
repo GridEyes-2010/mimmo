@@ -4626,6 +4626,10 @@ MimmoObject::degradeDegenerateElements(bitpit::PiercedVector<bitpit::Cell>* degr
     std::vector<long> toDelete;
     std::vector<bitpit::Cell> toInsert;
 
+    // Reserve a tenth of the entire mesh for cells to be insert/delete
+    toDelete.reserve(getNCells()/10);
+    toInsert.reserve(getNCells()/10);
+
     std::unordered_map<long,long> vertexMap;
 
     bool fillCells = false;
@@ -4640,6 +4644,11 @@ MimmoObject::degradeDegenerateElements(bitpit::PiercedVector<bitpit::Cell>* degr
         collapsedVertices->clear();
     }
 
+    // Loop on all cells to find the cell to be degraded or deleted
+    // In parallel all the processes do the same things on local/ghost shared cells
+    // The cells are degraded in the same manner and the cells/vertices delted
+    // are the same.
+    // Note. The new cells IDs can be different on different processes (local Id != ghost Id)
     for (bitpit::Cell & cell : getCells()){
 
         long cellId = cell.getId();
@@ -4647,13 +4656,15 @@ MimmoObject::degradeDegenerateElements(bitpit::PiercedVector<bitpit::Cell>* degr
         bitpit::ConstProxyVector<long> cellVertexIds = cell.getVertexIds();
         std::vector<long> cellConnectivity;
         std::vector<bitpit::Vertex> cellVertices;
+        cellConnectivity.reserve(cellVertexIds.size());
+        cellVertices.reserve(cellVertexIds.size());
         // Unique vertices cell connectivity
         for (long vertexId : cellVertexIds){
-            bitpit::Vertex candidateVertex = getPatch()->getVertex(vertexId);
+            bitpit::Vertex & candidateVertex = getPatch()->getVertex(vertexId);
             std::vector<bitpit::Vertex>::iterator it = std::find(cellVertices.begin(), cellVertices.end(), candidateVertex);
             if (it == cellVertices.end()){
                 cellConnectivity.push_back(vertexId);
-                cellVertices.push_back(candidateVertex);
+                cellVertices.emplace_back(candidateVertex);
             }
             else{
                 //Collapse vertices
@@ -4692,7 +4703,6 @@ MimmoObject::degradeDegenerateElements(bitpit::PiercedVector<bitpit::Cell>* degr
         addCell(cell, cell.getId());
     }
 
-
     // Collapse vertices
     if (!vertexMap.empty()) {
         // Renumber cell vertices
@@ -4701,18 +4711,19 @@ MimmoObject::degradeDegenerateElements(bitpit::PiercedVector<bitpit::Cell>* degr
         }
     }
 
-    // Reset info sync (needed?)
+    // Reset info sync
     m_AdjBuilt = false;
     m_IntBuilt = false;
     m_skdTreeSync = false;
     m_kdTreeSync = false;
     m_patchInfo.reset();
     m_infoSync = false;
-#if MIMMO_ENABLE_MPI
-    m_pointGhostExchangeInfoSync = false;
-#endif
     m_pointConnectivitySync = false;
-}
 
+#if MIMMO_ENABLE_MPI
+    cleanAllParallelSync();
+#endif
+
+}
 
 }
