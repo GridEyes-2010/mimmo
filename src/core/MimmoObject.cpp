@@ -3253,6 +3253,25 @@ void MimmoObject::buildPatchInfo(){
 }
 
 /*!
+ * Update the MimmoObject after a manipulation, i.e. a mesh adaption, a cells/vertices insertion/delete or
+ * a generic manipulation.
+ * Note. To update parallel information the cell adjacencies have to be built.
+ */
+// TODO Insert build adjacencies, interfaces and other info????
+void MimmoObject::update()
+{
+
+#if MIMMO_ENABLE_MPI
+    // Update parallel information by calling setPartitioned method
+    setPartitioned();
+#endif
+
+    // Update patch bounding box
+    getPatch()->updateBoundingBox(true);
+
+}
+
+/*!
  * Return if cell-cell adjacency is built for your current mesh.
  * \return true if local adjacencies are built.
  */
