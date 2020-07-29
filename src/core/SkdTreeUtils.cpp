@@ -1371,8 +1371,10 @@ long findSharedPointClosestGlobalCell(int nPoints, const std::array<double, 3> *
             // The patch is not partitioned, all cells are local
             ranks[i] = patch.getRank();
 
-            return nDistanceEvaluations;
         }
+
+        return nDistanceEvaluations;
+
     }
 
     // Get MPI communicator
@@ -1600,8 +1602,10 @@ long findPointClosestGlobalCell(int nPoints, const std::array<double, 3> *points
             // The patch is not partitioned, all cells are local
             ranks[i] = patch.getRank();
 
-            return nDistanceEvaluations;
         }
+
+        return nDistanceEvaluations;
+
     }
 
     // Get MPI communicator
