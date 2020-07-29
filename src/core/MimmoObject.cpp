@@ -1549,12 +1549,12 @@ void MimmoObject::updatePointGhostExchangeInfo()
 	if (getPatch()->isPartitioned()){
 
 		//Fill the nodes of the targets
-		for (const auto &entry : m_patch->getGhostExchangeTargets()) {
+		for (const auto &entry : getPatch()->getGhostExchangeTargets()) {
 			int ghostRank = entry.first;
 			std::vector<long> ghostIds = entry.second;
 			std::unordered_set<long> ghostVertices;
 			for (long cellId : ghostIds){
-				for (long vertexId : m_patch->getCell(cellId).getVertexIds()){
+				for (long vertexId : getPatch()->getCell(cellId).getVertexIds()){
 					ghostVertices.insert(vertexId);
 				}
 			}
@@ -1562,12 +1562,12 @@ void MimmoObject::updatePointGhostExchangeInfo()
 		}
 
 		//Fill the nodes of the sources
-		for (const auto &entry : m_patch->getGhostExchangeSources()) {
+		for (const auto &entry : getPatch()->getGhostExchangeSources()) {
 			int recvRank = entry.first;
 			std::vector<long> localIds = entry.second;
 			std::unordered_set<long> localVertices;
 			for (long cellId : localIds){
-				for (long vertexId : m_patch->getCell(cellId).getVertexIds()){
+				for (long vertexId : getPatch()->getCell(cellId).getVertexIds()){
 					localVertices.insert(vertexId);
 				}
 			}
@@ -2675,7 +2675,7 @@ MimmoObject::resyncPID(){
 MimmoSharedPointer<MimmoObject> MimmoObject::clone() const {
 
 	//first step clone the internal bitpit patch.
-	std::unique_ptr<bitpit::PatchKernel> clonedPatch = m_patch->clone();
+	std::unique_ptr<bitpit::PatchKernel> clonedPatch = getPatch()->clone();
 
 	//build the cloned mimmoObject using the custom constructor
 	MimmoSharedPointer<MimmoObject> result (new MimmoObject(m_type, clonedPatch));
