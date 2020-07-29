@@ -4632,7 +4632,6 @@ MimmoObject::triangulate(){
  * \param[out] collapsedVertices If not a null pointer the pointed vector is filled
                with the original collapsed (i.e. deleted) vertices
  */
-//TODO PARALLEL VERSION
 void
 MimmoObject::degradeDegenerateElements(bitpit::PiercedVector<bitpit::Cell>* degradedDeletedCells,
                                        bitpit::PiercedVector<bitpit::Vertex>* collapsedVertices)
