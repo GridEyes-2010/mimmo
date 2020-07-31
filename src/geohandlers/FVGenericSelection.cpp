@@ -278,30 +278,10 @@ FVGenericSelection::execute(){
     m_volpatch = tempVol;
     m_bndpatch = tempBnd;
 
-// TODO For now adjusting ghosts only for the volume patch. Later you will need
-// to adjust stuffs also for  the boundary
-#if MIMMO_ENABLE_MPI
-    m_volpatch->buildAdjacencies();
-    //delete orphan ghosts
-    m_volpatch->deleteOrphanGhostCells();
-    if(m_volpatch->getPatch()->countOrphanVertices() > 0){
-        m_volpatch->getPatch()->deleteOrphanVertices();
-    }
-    //fixed ghosts you will claim this patch partitioned.
-    m_volpatch->setPartitioned();
-
-    m_bndpatch->buildAdjacencies();
-    m_bndpatch->deleteOrphanGhostCells();
-    if(m_bndpatch->getPatch()->countOrphanVertices() > 0){
-        m_bndpatch->getPatch()->deleteOrphanVertices();
-    }
-    //fixed ghosts you will claim this patch partitioned.
-    m_bndpatch->setPartitioned();
-
-
-#endif
-
-
+    m_volpatch->cleanGeometry();
+    m_bndpatch->cleanGeometry();
+    m_volpatch->update();
+    m_bndpatch->update();
 
 };
 
