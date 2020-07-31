@@ -956,6 +956,11 @@ MimmoGeometry::execute(){
         (*m_log) << " " << std::endl;
         return;
     }
+#if MIMMO_ENABLE_MPI
+    // Force build adjacencies to update parallel information
+    getGeometry()->buildAdjacencies();
+    getGeometry()->update();
+#endif
     if (m_buildSkdTree) getGeometry()->buildSkdTree();
     if (m_buildKdTree) getGeometry()->buildKdTree();
 }
