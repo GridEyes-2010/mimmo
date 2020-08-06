@@ -178,6 +178,9 @@ Partition::execute(){
 		throw std::runtime_error(m_name + " : non empty linked geometry found on non-zero processors during geometric partition.");
 	};
 
+    //TODO FIX : RESULT OF PARTITION EMPTY IS DIFFERENT BETWEEN PROCESS!! POSSIBLE DEADLOCK !!
+    //TODO FIX : RESULT OF PARTITION EMPTY IS DIFFERENT BETWEEN PROCESS!! POSSIBLE DEADLOCK !!
+    //TODO FIX : RESULT OF PARTITION EMPTY IS DIFFERENT BETWEEN PROCESS!! POSSIBLE DEADLOCK !!
     if(!m_partition.empty()){
     if (m_partition.size() != m_geometry->getNCells())
 		throw std::runtime_error(m_name + " : partition size different from number of cells");
@@ -196,6 +199,9 @@ Partition::execute(){
 				getGeometry()->buildAdjacencies();
             }
 
+		    //TODO FIX : RESULT OF PARTITION EMPTY IS DIFFERENT BETWEEN PROCESS!! POSSIBLE DEADLOCK !!
+		    //TODO FIX : RESULT OF PARTITION EMPTY IS DIFFERENT BETWEEN PROCESS!! POSSIBLE DEADLOCK !!
+		    //TODO FIX : RESULT OF PARTITION EMPTY IS DIFFERENT BETWEEN PROCESS!! POSSIBLE DEADLOCK !!
 			//Compute partition
             if(m_partition.empty()){
                 computePartition();
