@@ -444,8 +444,6 @@ RefineGeometry::redgreenRefine(std::unordered_map<long,long> * mapping, mimmo::M
 {
 	//REDGREEN REFINEMENT
 
-    static_cast<bitpit::SurfUnstructured*>(getGeometry()->getPatch())->exportSTL("ppp.start."+std::to_string(getRank())+".stl", true, true);
-
 	// Redgreen refinement needs the geometry to be a triangulation.
 	for (bitpit::Cell & cell : getGeometry()->getPatch()->getCells()){
 		if (cell.getType() != bitpit::ElementType::TRIANGLE){
@@ -489,21 +487,6 @@ RefineGeometry::redgreenRefine(std::unordered_map<long,long> * mapping, mimmo::M
         // ghosts for other ranks
         MimmoPiercedVector<bool> isnewred;
         isnewred.initialize(geometry, MPVLocation::CELL, false);
-
-//        // Instantiate refinement tags container used only for communications
-//        MimmoPiercedVector<int> refinementTagCommunicated;
-//
-//        // Instantiate green split face container used only for communications
-//        MimmoPiercedVector<int> greenSplitFaceIndexCommunicated;
-//
-//        // Initialize communication structures for tags and split face index
-//        std::unique_ptr<GhostCommunicator> ghostCommunicator = std::unique_ptr<GhostCommunicator>(new GhostCommunicator(geometry->getPatch()));
-//        ghostCommunicator->resetExchangeLists();
-//        ghostCommunicator->setRecvsContinuous(true);
-//        std::unique_ptr<ListBufferStreamer<MimmoPiercedVector<int>,int>> tagGhostStreamer = std::unique_ptr<ListBufferStreamer<MimmoPiercedVector<int>,int>>(new ListBufferStreamer<MimmoPiercedVector<int>,int>(&refinementTagCommunicated));
-//        std::unique_ptr<ListBufferStreamer<MimmoPiercedVector<int>,int>> splitGhostStreamer = std::unique_ptr<ListBufferStreamer<MimmoPiercedVector<int>,int>>(new ListBufferStreamer<MimmoPiercedVector<int>,int>(&greenSplitFaceIndexCommunicated));
-//        ghostCommunicator->addData(tagGhostStreamer.get());
-//        ghostCommunicator->addData(splitGhostStreamer.get());
 #endif
 	{
 		// Build adjacencies
@@ -530,26 +513,28 @@ RefineGeometry::redgreenRefine(std::unordered_map<long,long> * mapping, mimmo::M
 
         // Instantiate refinement tags container used only for communications
         MimmoPiercedVector<int> refinementTagCommunicated;
-//        refinementTagCommunicated.initialize(geometry, MPVLocation::CELL, -1);
 
         // Instantiate green split face container used only for communications
         MimmoPiercedVector<int> greenSplitFaceIndexCommunicated;
-//        greenSplitFaceIndexCommunicated.initialize(geometry, MPVLocation::CELL, -1);
 
         // Fill initial sources and targets values
         for (auto source_tuple : geometry->getPatch()->getGhostExchangeSources()){
             int rank = source_tuple.first;
             for (long id : source_tuple.second){
-                refinementTagCommunicated.insert(id,-1);
-                greenSplitFaceIndexCommunicated.insert(id,-1);
+                if (!refinementTagCommunicated.exists(id)){
+                    refinementTagCommunicated.insert(id,-1);
+                    greenSplitFaceIndexCommunicated.insert(id,-1);
+                }
             }
         }
         for (auto target_tuple : geometry->getPatch()->getGhostExchangeTargets()){
             int rank = target_tuple.first;
             for (long id : target_tuple.second){
                 // Initialize targets (ghosts) to -1
-                refinementTagCommunicated.insert(id, -1);
-                greenSplitFaceIndexCommunicated.insert(id, -1);
+                if (!refinementTagCommunicated.exists(id)){
+                    refinementTagCommunicated.insert(id, -1);
+                    greenSplitFaceIndexCommunicated.insert(id, -1);
+                }
             }
         }
 
@@ -682,9 +667,6 @@ RefineGeometry::redgreenRefine(std::unordered_map<long,long> * mapping, mimmo::M
                     }
                 }
 
-                std::cout << "#" << getRank() << " refinementTagCommunicated size " << refinementTagCommunicated.size() << std::endl;
-                std::cout << "#" << getRank() << " greenSplitFaceIndexCommunicated size " << greenSplitFaceIndexCommunicated.size() << std::endl;
-
                 // Send data
                 ghostCommunicator.startAllExchanges();
 
@@ -697,9 +679,6 @@ RefineGeometry::redgreenRefine(std::unordered_map<long,long> * mapping, mimmo::M
 
                     // Maximum communicated tag to 2
                     refinementTagCommunicated[ghostId] = std::min(2, refinementTagCommunicated[ghostId]);
-
-//                    std::cout << "#" << getRank() << " ghost Id " << ghostId << std::endl;
-//                    std::cout << "#" << getRank() << " communicated tag " << refinementTagCommunicated[ghostId] << std::endl;
 
                     // If communicated tag is different from local one update it if greater
                     if (refinementTagCommunicated[ghostId] > refinementTag[ghostId]){
@@ -720,7 +699,6 @@ RefineGeometry::redgreenRefine(std::unordered_map<long,long> * mapping, mimmo::M
 
                 // Update global stack check
                 global_check = newreds.empty();
-                std::cout << "#" << getRank() << " global check " << global_check << std::endl;
                 MPI_Allreduce(MPI_IN_PLACE, &global_check, 1, MPI_C_BOOL, MPI_LAND, m_communicator);
             }
 
@@ -729,10 +707,7 @@ RefineGeometry::redgreenRefine(std::unordered_map<long,long> * mapping, mimmo::M
 
 	} // Scope to destroy temporary containers
 
-    geometry->update();
-    geometry->getPatch()->write("beforeRefinement.0");
-
-    std::cout << "#" << getRank() << " insert vertices " << std::endl;
+//    geometry->update();
 
 	// Insert new vertices
 	for (long interfaceId : edges){
@@ -746,13 +721,6 @@ RefineGeometry::redgreenRefine(std::unordered_map<long,long> * mapping, mimmo::M
 		long newVertexId = geometry->addVertex(newCoordinates);
 		edgeVertexId[interfaceId] = newVertexId;
 	}
-
-    std::cout << "#" << getRank() << " refine cells " << std::endl;
-
-    geometry->update();
-    geometry->getPatch()->write("beforeRefinement.1");
-
-    std::cout << "#" << getRank() << " # ghosts " << geometry->getPatch()->getGhostCount() << std::endl;
 
 	// Refine red and green cells
 	for (auto tupletag : refinementTag){
@@ -803,8 +771,6 @@ RefineGeometry::redgreenRefine(std::unordered_map<long,long> * mapping, mimmo::M
 
 		// Add entry to refine-coarse mapping and newCells structure
 		for (long newCellId : generatedCells){
-            std::cout << "#" << getRank() << " new cell Id " << newCellId << std::endl;
-            std::cout << "#" << getRank() << " new cell owner " << geometry->getPatch()->getCellRank(newCellId) << std::endl;
 			if (mapping != nullptr)
 				mapping->insert({newCellId, cellId});
 			newCells.insert(newCellId);
@@ -813,49 +779,20 @@ RefineGeometry::redgreenRefine(std::unordered_map<long,long> * mapping, mimmo::M
 	} // end loop on refinement tag
 
 
-//    std::cout << "#" << getRank() << " # ghosts " << geometry->getPatch()->getGhostCount() << std::endl;
-
-    std::cout << "#" << getRank() << " delete cells and cleaning " << std::endl;
-
 	//Delete cells and clean geometries
 	{
 		for (const long cellId : toDelete){
-//	        std::cout << "#" << getRank() << " delete cell  " << cellId << std::endl;
-//			getGeometry()->getPatch()->deleteCell(cellId, false, true);
+			getGeometry()->getPatch()->deleteCell(cellId);
 		}
 
-        std::cout << "#" << getRank() << " # ghosts " << geometry->getPatch()->getGhostCount() << std::endl;
-
-
-		// Force build adjacencies and update
-//	    std::cout << "#" << getRank() << " resetInterfaces " << std::endl;
-//		getGeometry()->resetInterfaces();
-//        std::cout << "#" << getRank() << " resetAdjacencies " << std::endl;
-//		getGeometry()->resetAdjacencies();
-        std::cout << "#" << getRank() << " buildAdjacencies " << std::endl;
-        getGeometry()->buildAdjacencies();
-//        std::cout << "#" << getRank() << " clean " << std::endl;
-        getGeometry()->cleanGeometry();
-        std::cout << "#" << getRank() << " buildAdjacencies " << std::endl;
-        getGeometry()->buildAdjacencies();
-//        getGeometry()->buildInterfaces();
-
-        static_cast<bitpit::SurfUnstructured*>(getGeometry()->getPatch())->exportSTL("mmm."+std::to_string(getRank())+".stl", false, false);
-
-        std::cout << "#" << getRank() << " update " << std::endl;
-
+		// Update geometry
         getGeometry()->update();
 
-        std::cout << "#" << getRank() << " build adj and update coarse " << std::endl;
+        // Update coarse patch
 		if (coarsepatch != nullptr){
-            coarsepatch->buildAdjacencies();
             coarsepatch->update();
 		}
 	}
-
-    geometry->getPatch()->write("beforeRefinement.3");
-
-    std::cout << "#" << getRank() << " add cells to refine patch " << std::endl;
 
 	// Add vertices and cells to refine patch
 	if (refinepatch != nullptr){
@@ -867,31 +804,9 @@ RefineGeometry::redgreenRefine(std::unordered_map<long,long> * mapping, mimmo::M
 				refinepatch->addVertex(vertex, vertexId);
 			}
 		}
-		// Force build adjacencies and update refine patch
-//		refinepatch->cleanGeometry();
-        refinepatch->buildAdjacencies();
+		// Update refine patch
         refinepatch->update();
 	}
-
-    std::cout << "#" << getRank() << " add vertices to refine patch " << std::endl;
-
-    // Add vertices and cells to refine patch
-	if (refinepatch != nullptr){
-		for (long newcellId : newCells){
-			bitpit::Cell cell = getGeometry()->getPatch()->getCell(newcellId);
-			refinepatch->addCell(cell, newcellId);
-			for (long vertexId : cell.getVertexIds()){
-				bitpit::Vertex vertex = getGeometry()->getPatch()->getVertex(vertexId);
-				refinepatch->addVertex(vertex, vertexId);
-			}
-		}
-        // Force build adjacencies and update refine patch
-//      refinepatch->cleanGeometry();
-        refinepatch->buildAdjacencies();
-        refinepatch->update();
-	}
-
-    std::cout << "#" << getRank() << " end refinement " << std::endl;
 
 }
 
@@ -929,10 +844,6 @@ RefineGeometry::redRefineCell(const long & cellId, const std::vector<long> & new
 	//Number of new triangles is 4
 	std::size_t sizeEle = 3;
 	newCellIDs.reserve(sizeEle+1);
-
-	// Delete Cell
-	getGeometry()->getPatch()->deleteCell(cellId, false, true);
-    std::cout << "#" << getRank() << " delete cell  " << cellId << std::endl;
 
 	//insert new triangles from red subdivision
 	// Insert internal one
@@ -985,10 +896,6 @@ RefineGeometry::greenRefineCell(const long & cellId, const long newVertexId, int
     // Recover cell rank
     rank = getGeometry()->getPatch()->getCellRank(cellId);
 #endif
-
-    // Delete Cell
-    getGeometry()->getPatch()->deleteCell(cellId, false, true);
-    std::cout << "#" << getRank() << " delete cell  " << cellId << std::endl;
 
 	//Number of new triangles is 2
 	std::size_t sizeEle = 3;
