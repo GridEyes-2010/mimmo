@@ -2124,7 +2124,7 @@ bool MimmoObject::cleanParallelAdjacenciesSync(){
 
 	//if the boolen is false you need to reset
 	if(!m_AdjBuilt){
-		resetAdjacencies();
+		destroyAdjacencies();
 	}
 	//return true clean if the boolean was false, and viceversa.
 	return (!m_AdjBuilt);
@@ -2142,7 +2142,7 @@ bool MimmoObject::cleanParallelInterfacesSync(){
 
 	//if the boolen is false you need to reset
 	if(!m_IntBuilt){
-		resetInterfaces();
+		destroyInterfaces();
 	}
 	//return true clean if the boolean was false, and viceversa.
 	return (!m_IntBuilt);
@@ -2287,7 +2287,7 @@ void MimmoObject::deleteOrphanGhostCells(){
 	}
 	//erase temporarely adjacencies
 	if(checkResetAdjacencies){
-		resetAdjacencies();
+		destroyAdjacencies();
 	}
 
 	MPI_Barrier(m_communicator);
@@ -3433,19 +3433,18 @@ void MimmoObject::buildInterfaces(){
 };
 
 /*!
- * Force the class to reset cell-cell adjacency connectivity.
+ * Force the class to destroy cell-cell adjacency connectivity.
  */
-void MimmoObject::resetAdjacencies(){
-    //do not use delete from bitpit::Cell!!!! PatchKernel does not track them.
+void MimmoObject::destroyAdjacencies(){
     getPatch()->destroyAdjacencies();
     m_AdjBuilt = false;
 };
 
 /*!
- * Force the class to reset Interfaces connectivity.
+ * Force the class to destroy Interfaces connectivity.
  */
-void MimmoObject::resetInterfaces(){
-    getPatch()->destroyInterfaces(); // is the same as getPatch()->resetInterfaces
+void MimmoObject::destroyInterfaces(){
+    getPatch()->destroyInterfaces(); // is the same as getPatch()->destroyInterfaces
     m_IntBuilt = false;
 
 };
@@ -4621,8 +4620,8 @@ MimmoObject::triangulate(){
 	cleanPointConnectivity();
 	cleanSkdTree();
 	cleanKdTree();
-	resetInterfaces();
-	resetAdjacencies();
+	destroyInterfaces();
+	destroyAdjacencies();
 
 #if MIMMO_ENABLE_MPI
 	cleanAllParallelSync();
