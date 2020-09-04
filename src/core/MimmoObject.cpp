@@ -2208,9 +2208,8 @@ bool MimmoObject::cleanAllParallelSync(){
 }
 
 /*!
- * Give if the patch is really partitioned, i.e. not owned entirely by a single master process.
- * Note. In mimmo the master process is considered rank = 0, so a patch entirely
- * owned by a process with rank != 0 is considered really partitioned.
+ * Give if the patch is really partitioned, i.e. not owned entirely by the single master process.
+ * Note. In mimmo the master process is considered rank = 0.
  */
 bool
 MimmoObject::isDistributed()
@@ -2219,17 +2218,7 @@ MimmoObject::isDistributed()
         return false;
     }
 
-    if (!getPatch()->isPartitioned()){
-        return false;
-    }
-
-    bool partitioned = false;
-    partitioned = (getNGlobalCells() != getNCells());
-
-    MPI_Bcast(&partitioned, 1, MPI_C_BOOL, 0, m_communicator);
-
-    return partitioned;
-
+    return getPatch()->isDistributed();
 }
 
 /*!
